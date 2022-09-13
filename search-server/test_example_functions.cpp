@@ -1,7 +1,54 @@
 #include "test_example_functions.h"
 using namespace std;
 
+//ћакросы, помогающие в тестировании метотодов класса
+#define ASSERT(expr) AssertImpl(!!(expr), #expr, __FILE__, __FUNCTION__, __LINE__, ""s)
 
+#define ASSERT_HINT(expr, hint) AssertImpl(!!(expr), #expr, __FILE__, __FUNCTION__, __LINE__, (hint))
+
+#define ASSERT_EQUAL(a, b) AssertEqualImpl((a), (b), #a, #b, __FILE__, __FUNCTION__, __LINE__, ""s)
+
+#define ASSERT_EQUAL_HINT(a, b, hint) AssertEqualImpl((a), (b), #a, #b, __FILE__, __FUNCTION__, __LINE__, (hint))
+
+#define RUN_TEST(func)  RunTestImpl(func, #func)
+
+template <typename Function>
+void RunTestImpl(Function function, const std::string& function_name) {
+	using namespace std;
+	function();
+	cerr << function_name << " OK"s << endl;
+}
+
+template <typename T, typename U>
+void AssertEqualImpl(const T& t, const U& u, const std::string& t_str, const std::string& u_str, const std::string& file,
+	const std::string& func, unsigned line, const std::string& hint) {
+	using namespace std;
+	if (t != u) {
+		cerr << boolalpha;
+		cerr << file << "("s << line << "): "s << func << ": "s;
+		cerr << "ASSERT_EQUAL("s << t_str << ", "s << u_str << ") failed: "s;
+		cerr << t << " != "s << u << "."s;
+		if (!hint.empty()) {
+			cerr << " Hint: "s << hint;
+		}
+		cerr << endl;
+		abort();
+	}
+}
+
+void AssertImpl(bool value, const std::string& expr_str, const std::string& file, const std::string& func, unsigned line,
+	const std::string& hint) {
+	using namespace std;
+	if (!value) {
+		cerr << file << "("s << line << "): "s << func << ": "s;
+		cerr << "ASSERT("s << expr_str << ") failed."s;
+		if (!hint.empty()) {
+			cerr << " Hint: "s << hint;
+		}
+		cerr << endl;
+		abort();
+	}
+}
 
 void TestIterator() {
 	SearchServer search_server("and in at"s);
@@ -66,52 +113,8 @@ void TestRemoveDocument() {
 		assert(search_server.FindTopDocuments("UNIC_TEXT"s).empty());
 	}
 
-	std::cout << "TestRemoveDocument OK"s << std::endl;
+	std::cerr << "TestRemoveDocument OK"s << std::endl;
 }
-
-/*   ѕодставьте сюда вашу реализацию макросов
-   ASSERT, ASSERT_EQUAL, ASSERT_EQUAL_HINT, ASSERT_HINT и RUN_TEST*/
-template <typename T, typename U>
-void AssertEqualImpl(const T& t, const U& u, const std::string& t_str, const std::string& u_str, const std::string& file,
-	const std::string& func, unsigned line, const std::string& hint) {
-	using namespace std;
-	if (t != u) {
-		cout << boolalpha;
-		cout << file << "("s << line << "): "s << func << ": "s;
-		cout << "ASSERT_EQUAL("s << t_str << ", "s << u_str << ") failed: "s;
-		cout << t << " != "s << u << "."s;
-		if (!hint.empty()) {
-			cout << " Hint: "s << hint;
-		}
-		cout << endl;
-		abort();
-	}
-}
-
-
-#define ASSERT_EQUAL(a, b) AssertEqualImpl((a), (b), #a, #b, __FILE__, __FUNCTION__, __LINE__, ""s)
-
-#define ASSERT_EQUAL_HINT(a, b, hint) AssertEqualImpl((a), (b), #a, #b, __FILE__, __FUNCTION__, __LINE__, (hint))
-
-void AssertImpl(bool value, const std::string& expr_str, const std::string& file, const std::string& func, unsigned line,
-	const std::string& hint) {
-	using namespace std;
-	if (!value) {
-		cout << file << "("s << line << "): "s << func << ": "s;
-		cout << "ASSERT("s << expr_str << ") failed."s;
-		if (!hint.empty()) {
-			cout << " Hint: "s << hint;
-		}
-		cout << endl;
-		abort();
-	}
-}
-
-#define ASSERT(expr) AssertImpl(!!(expr), #expr, __FILE__, __FUNCTION__, __LINE__, ""s)
-
-#define ASSERT_HINT(expr, hint) AssertImpl(!!(expr), #expr, __FILE__, __FUNCTION__, __LINE__, (hint))
-
-// -------- Ќачало модульных тестов поисковой системы (из 2го спринта) ----------
 
 // “ест провер€ет, что поискова€ система исключает стоп-слова при добавлении документов
 void TestExcludeStopWordsFromAddedDocumentContent() {
@@ -203,14 +206,14 @@ void TestMatchingWordsAndMinusWords() {
 	server.AddDocument(doc0_id, content0, DocumentStatus::ACTUAL, ratings0);
 	{
 		const auto& [matched_words, doc_status] = server.MatchDocument("let happiness leave for ever"s, doc0_id);
-		ASSERT_EQUAL(matched_words[0], "for"sv); // @suppress("Invalid arguments")
-		ASSERT_EQUAL(matched_words[1], "happiness"sv); // @suppress("Invalid arguments")
-		ASSERT_EQUAL(matched_words[2], "leave"sv); // @suppress("Invalid arguments")
-		ASSERT_EQUAL(matched_words[3], "let"sv); // @suppress("Invalid arguments")
+		ASSERT_EQUAL(matched_words[0], "for"sv); 
+		ASSERT_EQUAL(matched_words[1], "happiness"sv); 
+		ASSERT_EQUAL(matched_words[2], "leave"sv); 
+		ASSERT_EQUAL(matched_words[3], "let"sv); 
 	}
 	{
 		const auto [matched_words, doc_status] = server.MatchDocument("let happiness -leave for ever"s, doc0_id);
-		ASSERT_HINT(matched_words.empty(), "Any matched minus word - no matched doc"s); // @suppress("Method cannot be resolved")
+		ASSERT_HINT(matched_words.empty(), "Any matched minus word - no matched doc"s); 
 	}
 }
 
@@ -299,16 +302,8 @@ void TestRelevanceCalculation() {
 	ASSERT_HINT(abs(found_docs[1].relevance - 0.18904) < RELEVANCE_TRESHOLD, "Don't forget threshold"s);
 }
 
-template <typename Function>
-void RunTestImpl(Function function, const std::string& function_name) {
-	using namespace std;
-	function();
-	cerr << function_name << " OK"s << endl;
-}
 
-#define RUN_TEST(func)  RunTestImpl(func, #func)
-
-// ‘ункци€ TestSearchServer €вл€етс€ точкой входа дл€ запуска тестов
+// «апуск базовых тестов
 void TestSearchServer() {
 	RUN_TEST(TestExcludeStopWordsFromAddedDocumentContent);
 	RUN_TEST(TestFindAddedDocumentByWord);
@@ -360,7 +355,7 @@ using namespace std;
 		const auto [words, status] = search_server.MatchDocument(execution::par, query, 4);
 		assert(words.size() == 2);
 	}
-	cout << "TestMachDocumentsPar OK"s << endl;
+	cerr << "TestMachDocumentsPar OK"s << endl;
 }
 
 void TesdRemoveDocumentPar() {
@@ -382,16 +377,16 @@ void TesdRemoveDocumentPar() {
 	const string query = "curly and funny"s;
 
 	assert(search_server.GetDocumentCount() == 5 && search_server.FindTopDocuments(query).size()==4);
-	// однопоточна€ верси€
+	// последовательна€ верси€
 	search_server.RemoveDocument(5);
 	assert(search_server.GetDocumentCount() == 4 && search_server.FindTopDocuments(query).size() == 3);
-	// однопоточна€ верси€
+	// последовательна€ верси€
 	search_server.RemoveDocument(execution::seq, 1);
 	assert(search_server.GetDocumentCount() == 3 && search_server.FindTopDocuments(query).size() == 2);
-	// многопоточна€ верси€
+	// параллельна€ верси€
 	search_server.RemoveDocument(execution::par, 2);
 	assert(search_server.GetDocumentCount() == 2 && search_server.FindTopDocuments(query).size() == 1);
-	cout << "TesdRemoveDocumentPar OK"s << endl;
+	cerr << "TesdRemoveDocumentPar OK"s << endl;
 }
 
 void TestFindTopDocsPar() {
@@ -442,5 +437,5 @@ void TestFindTopDocsPar() {
 		}
 		assert(ss.str() == ss1.str());
 	}
-	cout << "TestFindTopDocsPar OK"s << endl;
+	cerr << "TestFindTopDocsPar OK"s << endl;
 }

@@ -1,4 +1,4 @@
-#include "process_queries.h"
+//#include "process_queries.h"
 #include "search_server.h"
 #include "test_example_functions.h"
 
@@ -86,6 +86,7 @@ void Bench() {
 
 int main() {
 	system("chcp 1251 > null");
+	//Запуск тестов
 	TestIterator();
 	TestGetWordFrequencies();
 	TestRemoveDocument();
@@ -93,6 +94,7 @@ int main() {
 	TestMachDocumentsPar();
 	TesdRemoveDocumentPar();
 	TestFindTopDocsPar();
+	//Сравнение однопоточной версии с многопоточной
 	Bench();
 
 	return 0;
