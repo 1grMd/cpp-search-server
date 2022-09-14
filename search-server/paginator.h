@@ -24,6 +24,7 @@ private:
 	Iterator end_;
 };
 
+//Класс, реализующий вывод постранично
 template <typename Iterator>
 class Paginator {
 public:
