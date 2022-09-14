@@ -62,7 +62,7 @@ void Test(string_view mark, const SearchServer& search_server, const vector<stri
 			total_relevance += document.relevance;
 		}
 	}
-	cout << total_relevance << endl;
+	cout<< "Total relevance: "s << total_relevance << endl;
 }
 
 #define TEST(policy) Test(#policy, search_server, queries, execution::policy)
